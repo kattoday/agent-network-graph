@@ -1,0 +1,42 @@
+name: Deploy Agent Graph
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write   # Required for requesting the JWT (OIDC)
+  contents: read    # Required for actions/checkout
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::992878410915:role/GitHubActionRole
+          aws-region: us-east-1
+
+      - name: Install Dependencies
+        run: |
+          npm install -g aws-cdk
+          pip install -r requirements.txt
+          cd lambda && pip install gremlinpython -t .
+
+      - name: CDK Deploy
+        run: cdk deploy --require-approval never
+
+      - name: Run Scraper and Trigger Ingestor
+        run: |
+          # This runs your scraper.py locally in GitHub
+          # Then uses the AWS CLI to "poke" your Lambda with the data
+          python scraper.py
+
