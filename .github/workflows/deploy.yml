@@ -34,7 +34,7 @@ jobs:
           cd ..
 
       - name: CDK Bootstrap
-        run: npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1
+        run: npx cdk bootstrap aws://992878410915/us-east-1
 
       - name: CDK Deploy
         run: npx cdk deploy --require-approval never
