@@ -29,14 +29,18 @@ jobs:
         run: |
           npm install -g aws-cdk
           pip install -r requirements.txt
+          # Install dependencies for the Lambda environment
           cd lambda && pip install gremlinpython -t .
+          cd ..
+
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1
 
       - name: CDK Deploy
-        run: cdk deploy --require-approval never
+        run: npx cdk deploy --require-approval never
 
       - name: Run Scraper and Trigger Ingestor
-        run: |
-          # This runs your scraper.py locally in GitHub
-          # Then uses the AWS CLI to "poke" your Lambda with the data
-          python scraper.py
+        run: python scraper.py
+        env:
+          AWS_REGION: us-east-1
 
